@@ -1,17 +1,17 @@
 from django.db import models
 
 # Create your models here.
-class Catagory(models.Model):
+class Category(models.Model):
     name = models.CharField(max_length=128, unique=True)
 
     class Meta:
-        verbose_name_plural = 'Catagories'
+        verbose_name_plural = 'Categories'
         
     def __str__(self):
         return self.name
 
 class Page(models.Model):
-    catagory = models.ForeignKey(Catagory, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
     title = models.CharField(max_length=128)
     url = models.URLField()
     views = models.IntegerField(default=0)
