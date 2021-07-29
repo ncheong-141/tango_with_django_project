@@ -21,6 +21,9 @@
                     <li><a href="{{ page.url }}">{{ page.title }}</a></li>
                     {% endfor %}
                 </ul>
+            
+            <div><a href="/rango/category/{{category.slug }}/add_page/">Add Page</a> <br/></div>
+            
             {% else %}
             <strong>No pages currently in category.</strong>
             {% endif %} 
