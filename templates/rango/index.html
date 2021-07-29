@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 
-{% load staticfiles %} <!-- New line -->
+{% extends 'rango/base.html' %}
+{% load staticfiles %}
 
 <html>
-	<head>
-		<title>Rango</title>
-	</head>
-	<body>
+	{% block title_block %} 
+		Main Page
+	{% endblock %}
+
+
+	{% block body_block %}
 		<h1>Rango says...</h1>
 		<div>
 			hey there partner! <br />
@@ -43,13 +46,10 @@
 				{% endif%}
 		</div>
 
-
-
 		<div>
-			<a href="/rango/about/">About</a><br />
-			<a href="/rango/add_category/">Add a New Category</a><br />
-			<img src="{% static 'images/rango.jpg' %}"
-				alt="Picture of Rango" /> <!-- New line -->
+			<img src="{% static 'images/rango.jpg' %}" alt="Picture of Rango" />
+			<!-- New line -->
 		</div>
-	</body>
+	{% endblock %}
+
 </html>
