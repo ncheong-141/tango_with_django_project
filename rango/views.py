@@ -30,9 +30,6 @@ def index(request):
     # Add cookie information via helper method
     visitor_cookie_handler(request)
 
-    # Add visits to context dictionary to display to user
-    context_dict['visits'] = request.session['visits']
-
     # create a response variable
     response = render(request, 'rango/index.html', context=context_dict)
 
@@ -46,9 +43,16 @@ def about(request):
 
     # prints out the user name, if no one is logged in it prints `AnonymousUser`
     print(request.user)
+
+    # Add cookie information via helper method
+    visitor_cookie_handler(request)
+
+    # Add visits to context dictionary to display to user
+    context_dict = {}
+    context_dict['visits'] = request.session['visits']
     
     # {} since render requires a dictionary parameter, passing an empty dictionary
-    return render(request, 'rango/about.html', {})
+    return render(request, 'rango/about.html', context_dict)
 
 # Show the category when selected 
 def show_category(request, category_name_slug):
@@ -247,7 +251,7 @@ def visitor_cookie_handler(request):
     last_visit_time = datetime.strptime(last_visit_cookie[:-7],'%Y-%m-%d %H:%M:%S')
     
     # If it's been more than a day since the last visit...
-    if (datetime.now() - last_visit_time).seconds > 0:
+    if (datetime.now() - last_visit_time).days > 0:
         visits = visits + 1
         # Update the last visit cookie now that we have updated the count
         request.session['last_visit'] = str(datetime.now())
