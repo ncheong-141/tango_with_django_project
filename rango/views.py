@@ -11,6 +11,7 @@ from rango.forms import PageForm
 from rango.forms import UserForm, UserProfileForm
 
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.urls import reverse
 
@@ -135,7 +136,6 @@ def add_page(request, category_name_slug):
     return render(request, 'rango/add_page.html', context=context_dict)
 
 
-
 def register(request):
 
     # Boolean variable to define if a user has been registered (switch to true when successful)
@@ -221,3 +221,7 @@ def user_login(request):
     else:
         # No context variables to pass to the template system
         return render(request, 'rango/login.html')
+
+@login_required
+def restricted(request):
+    return HttpResponse("Since you're logged in, you can see this text!")
