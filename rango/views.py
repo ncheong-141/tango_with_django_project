@@ -14,14 +14,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.urls import reverse
+from datetime import datetime
 
 def index(request): 
 
     # Query the database for a list of ALL categories currently stored.
-    # Order the categories by the number of likes in descending order.
-    # Retrieve the top 5 only -- or all if less than 5.
-    # Place the list in our context_dict dictionary (with our boldmessage!)
-    # that will be passed to the template engine.
     category_list = Category.objects.order_by('-likes')[:5]
     pages= Page.objects.order_by('-views')[:5]
 
@@ -29,10 +26,19 @@ def index(request):
     context_dict['boldmessage'] = 'Crunchy, creamy, cookie, candy, cupcake!'
     context_dict['categories'] = category_list
     context_dict['pages'] = pages
+    
+    # Add cookie information via helper method
+    visitor_cookie_handler(request)
 
-    print(context_dict)
-    # Return a rendered response to send to the client.
-    return render(request, 'rango/index.html', context=context_dict)
+    # Add visits to context dictionary to display to user
+    context_dict['visits'] = request.session['visits']
+
+    # create a response variable
+    response = render(request, 'rango/index.html', context=context_dict)
+
+    # Return response back to user 
+    return response
+    
 
 def about(request):
     # prints out whether the method is a GET or a POST
@@ -51,27 +57,21 @@ def show_category(request, category_name_slug):
     # to the template rendering engine.
     context_dict = {}
     try:
-        # Can we find a category name slug with the given name?
-        # If we can't, the .get() method raises a DoesNotExist exception.
-        # The .get() method returns one model instance or raises an exception.
+        # Try to get the catagory via the slug name
         category = Category.objects.get(slug=category_name_slug)
 
         # Retrieve all of the associated pages.
-        # The filter() will return a list of page objects or an empty list.
         pages = Page.objects.filter(category=category)
 
         # Adds our results list to the template context under name pages.
         context_dict['pages'] = pages
         
-        # We also add the category object from
-        # the database to the context dictionary.
-        # We'll use this in the template to verify that the category exists.
+        # Add category to context dictionary
         context_dict['category'] = category
         
     except Category.DoesNotExist:
-        # We get here if we didn't find the specified category.
-        # Don't do anything -
-        # the template will display the "no category" message for us.
+
+        # No specified catagory found.
         context_dict['category'] = None
         context_dict['pages'] = None
     
@@ -233,3 +233,37 @@ def user_logout(request):
    
     # Take the user back to the homepage.
     return redirect(reverse('rango:index'))
+
+
+"""
+Helper methods
+"""
+def visitor_cookie_handler(request):
+    
+    # Get the number of visits to the site. If cookie exists, cast result to int. If not, default to 1
+    visits = int(get_server_side_cookie(request, 'visits', '1'))
+    
+    last_visit_cookie = get_server_side_cookie(request, 'last_visit', str(datetime.now()))
+    last_visit_time = datetime.strptime(last_visit_cookie[:-7],'%Y-%m-%d %H:%M:%S')
+    
+    # If it's been more than a day since the last visit...
+    if (datetime.now() - last_visit_time).seconds > 0:
+        visits = visits + 1
+        # Update the last visit cookie now that we have updated the count
+        request.session['last_visit'] = str(datetime.now())
+    else:
+        # Set the last visit cookie
+        request.session['last_visit'] = last_visit_cookie
+
+    # Update/set the visits cookie
+    request.session['visits'] = visits
+
+
+def get_server_side_cookie(request, cookie, default_val=None):
+    
+    val = request.session.get(cookie)
+    
+    if not val:
+        val = default_val
+    
+    return val
